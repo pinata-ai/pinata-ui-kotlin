@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <declare-styleable name="PinataComponentView">
+    <attr name="pinataEnvironment" format="enum">
+      <enum name="production" value="0" />
+      <enum name="sandbox" value="1" />
+      <enum name="dev" value="2" />
+    </attr>
+    <attr name="pinataCompanyName" format="string" />
+    <attr name="pinataDetailsId" format="string" />
+    <attr name="pinataDetailsType" format="string" />
+  </declare-styleable>
+</resources>
