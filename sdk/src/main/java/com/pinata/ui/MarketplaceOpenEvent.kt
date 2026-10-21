@@ -33,3 +33,8 @@ fun interface OnMarketplaceOpenListener {
 fun interface OnPinataErrorListener {
   fun onError(message: String)
 }
+
+/** Full Shopping consumed a deep link (or the renter declined the consent holding it). */
+fun interface OnDetailsConsumedListener {
+  fun onDetailsConsumed()
+}

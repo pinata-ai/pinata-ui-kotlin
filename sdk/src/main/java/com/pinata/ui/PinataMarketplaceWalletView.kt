@@ -14,4 +14,8 @@ class PinataMarketplaceWalletView @JvmOverloads constructor(
 ) : PinataComponentView(context, attrs) {
 
   override val componentTag = "pinata-marketplace-wallet"
+
+  var customization: WalletCustomization = WalletCustomization()
+
+  override fun componentCustomization() = customization.toJson()
 }

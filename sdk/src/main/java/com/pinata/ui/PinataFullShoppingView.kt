@@ -16,6 +16,7 @@ class PinataFullShoppingView @JvmOverloads constructor(
   override val componentTag = "pinata-marketplace-full-shopping"
   override val usesEventMode = false
 
+  var customization: FullShoppingCustomization = FullShoppingCustomization()
   var detailsId: String? = null
   var detailsType: String? = null
 
@@ -26,6 +27,8 @@ class PinataFullShoppingView @JvmOverloads constructor(
       recycle()
     }
   }
+
+  override fun componentCustomization() = customization.toJson()
 
   override fun buildCustomization() = super.buildCustomization().apply {
     detailsId?.let { put("detailsId", it) }

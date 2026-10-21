@@ -19,7 +19,9 @@ Written in Kotlin with a Java-callable API (see `spike-native-webview/java-suppo
 val wallet = PinataMarketplaceWalletView(context).apply {
   environment = PinataEnvironment.SANDBOX
   userToken = token            // omit for anonymous users
-  companyName = "your-company"
+  customization.companyName = "your-company"
+  customization.ctaText = "Browse marketplace"
+  customization.colorScheme.primaryColor = "#0055FF"
   onMarketplaceOpenListener = OnMarketplaceOpenListener { event ->
     // event.authenticated, event.detailsId, event.detailsType
     openFullShopping(event)
@@ -45,8 +47,11 @@ Notes:
 - `window.open` targets (deals, "Access your full Pinata account") open in Chrome Custom Tabs.
 - Wallet and Preview never navigate: every click arrives as a `MarketplaceOpenEvent`. Full
   Shopping is the destination and emits no navigation event.
-- Extra `customization` keys (labels, colors, currency) go in the `customization` property as a
-  `JSONObject`; the view merges its own keys over it.
+- `customization` is typed per component (`WalletCustomization`, `PreviewCustomization`,
+  `FullShoppingCustomization`), mirroring the web contract: only what you set is sent. Keys the
+  SDK does not type yet go in `extraCustomization` (a `JSONObject`); typed values win.
+- Full Shopping also reports `onDetailsConsumedListener` when a deep link is consumed.
+- Jetpack Compose: the views are plain `View`s, use them through `AndroidView { ... }`.
 
 ## Run the demos
 

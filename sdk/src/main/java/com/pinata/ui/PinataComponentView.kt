@@ -36,10 +36,11 @@ abstract class PinataComponentView @JvmOverloads constructor(
   var environment: PinataEnvironment = PinataEnvironment.PRODUCTION
   var userToken: String? = null
   var companyName: String? = null
-  /** Extra `customization` keys, merged over what the view sets (view wins on conflicts). */
-  var customization: JSONObject = JSONObject()
+  /** Escape hatch for `customization` keys the SDK does not type yet; typed values win. */
+  var extraCustomization: JSONObject = JSONObject()
   var onMarketplaceOpenListener: OnMarketplaceOpenListener? = null
   var onErrorListener: OnPinataErrorListener? = null
+  var onDetailsConsumedListener: OnDetailsConsumedListener? = null
 
   protected val webView = WebView(context)
   private var bridgeSupported = true
@@ -85,6 +86,7 @@ abstract class PinataComponentView @JvmOverloads constructor(
     when (event.optString("type")) {
       "pinata-marketplace-open" ->
         onMarketplaceOpenListener?.onMarketplaceOpen(MarketplaceOpenEvent.fromJson(event))
+      "pinata-embed-details-consumed" -> onDetailsConsumedListener?.onDetailsConsumed()
       // `detail` is whatever pinata-ui put in the CustomEvent: a string or an object (kept as JSON).
       "pinata-error" ->
         onErrorListener?.onError(
@@ -114,8 +116,12 @@ abstract class PinataComponentView @JvmOverloads constructor(
     webView.destroy()
   }
 
+  /** The view's typed `customization`, serialized; null when nothing was set. */
+  protected abstract fun componentCustomization(): JSONObject?
+
   protected open fun buildCustomization(): JSONObject {
-    val json = JSONObject(customization.toString())
+    val json = JSONObject(extraCustomization.toString())
+    json.mergeFlat(componentCustomization())
     if (usesEventMode) json.put("navigationMode", "events")
     companyName?.let { if (!json.has("companyName")) json.put("companyName", it) }
     return json
