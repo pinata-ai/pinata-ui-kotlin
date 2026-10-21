@@ -21,7 +21,8 @@ import org.json.JSONObject
  * (deals, full Pinata account) open in Chrome Custom Tabs.
  *
  * Configure the properties, then call [load]. The component reads them on load only;
- * to change them afterwards, set and call [load] again.
+ * to change them afterwards, set and call [load] again. The view is single-use: once
+ * detached from the window it destroys its WebView, so create a new instance to show it again.
  */
 abstract class PinataComponentView @JvmOverloads constructor(
   context: Context,
@@ -41,6 +42,8 @@ abstract class PinataComponentView @JvmOverloads constructor(
   var onErrorListener: OnPinataErrorListener? = null
 
   protected val webView = WebView(context)
+  private var bridgeSupported = true
+  private var destroyed = false
 
   init {
     context.theme.obtainStyledAttributes(attrs, R.styleable.PinataComponentView, 0, 0).apply {
@@ -71,6 +74,8 @@ abstract class PinataComponentView @JvmOverloads constructor(
       WebViewCompat.addWebMessageListener(this, "PinataBridge", setOf("*")) { _, message, _, _, _ ->
         onBridgeMessage(message.data ?: return@addWebMessageListener)
       }
+    } else {
+      bridgeSupported = false
     }
   }
 
@@ -80,12 +85,33 @@ abstract class PinataComponentView @JvmOverloads constructor(
     when (event.optString("type")) {
       "pinata-marketplace-open" ->
         onMarketplaceOpenListener?.onMarketplaceOpen(MarketplaceOpenEvent.fromJson(event))
-      "pinata-error" -> onErrorListener?.onError(event.optString("detail"))
+      // `detail` is whatever pinata-ui put in the CustomEvent: a string or an object (kept as JSON).
+      "pinata-error" ->
+        onErrorListener?.onError(
+          event.opt("detail")?.takeIf { it !== JSONObject.NULL }?.toString() ?: "",
+        )
     }
   }
 
   fun load() {
+    if (destroyed) {
+      onErrorListener?.onError("This view was detached and destroyed; create a new instance.")
+      return
+    }
+    if (!bridgeSupported) {
+      onErrorListener?.onError(
+        "This device's WebView does not support web message listeners; Pinata events will not reach the app.",
+      )
+    }
     webView.loadDataWithBaseURL(environment.baseUrl, buildHostPage(), "text/html", "utf-8", null)
+  }
+
+  // The view is single-use, like the web component: once detached, create a new instance.
+  override fun onDetachedFromWindow() {
+    super.onDetachedFromWindow()
+    destroyed = true
+    removeView(webView)
+    webView.destroy()
   }
 
   protected open fun buildCustomization(): JSONObject {
@@ -114,7 +140,7 @@ abstract class PinataComponentView @JvmOverloads constructor(
       addEventListener("message", e => PinataBridge.postMessage(JSON.stringify(e.data)));
       addEventListener("DOMContentLoaded", () =>
         document.body.firstElementChild.addEventListener("pinata-error", e =>
-          PinataBridge.postMessage(JSON.stringify({type: "pinata-error", detail: String((e.detail && e.detail.message) || e.detail || "")}))));
+          PinataBridge.postMessage(JSON.stringify({type: "pinata-error", detail: e.detail == null ? "" : e.detail}))));
     </script>
     </head>
     <body>
