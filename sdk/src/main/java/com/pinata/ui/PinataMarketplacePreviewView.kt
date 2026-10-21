@@ -14,4 +14,8 @@ class PinataMarketplacePreviewView @JvmOverloads constructor(
 ) : PinataComponentView(context, attrs) {
 
   override val componentTag = "pinata-marketplace-preview"
+
+  var customization: PreviewCustomization = PreviewCustomization()
+
+  override fun componentCustomization() = customization.toJson()
 }

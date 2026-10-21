@@ -34,8 +34,16 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     container = FrameLayout(this)
 
+    val buildAnonWallet = {
+      PinataMarketplaceWalletView(this).apply {
+        // Exercises the typed customization end to end.
+        customization.ctaText = "Open the marketplace"
+        customization.colorScheme.primaryColor = "#0A7E5C"
+      }.configured(null)
+    }
+
     val menu = LinearLayout(this).apply {
-      addButton("Wallet anonymous") { PinataMarketplaceWalletView(this@MainActivity).configured(null) }
+      addButton("Wallet anonymous", buildAnonWallet)
       addButton("Wallet logged in") { PinataMarketplaceWalletView(this@MainActivity).configured(token) }
       addButton("Preview logged in") { PinataMarketplacePreviewView(this@MainActivity).configured(token) }
     }
@@ -51,7 +59,7 @@ class MainActivity : ComponentActivity() {
       if (onFullShopping) showSelected() else finish()
     }
 
-    showSelected = { show(PinataMarketplaceWalletView(this).configured(null)) }
+    showSelected = { show(buildAnonWallet()) }
     showSelected()
   }
 
