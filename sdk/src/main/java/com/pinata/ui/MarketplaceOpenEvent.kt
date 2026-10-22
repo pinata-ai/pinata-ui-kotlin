@@ -38,3 +38,8 @@ fun interface OnPinataErrorListener {
 fun interface OnDetailsConsumedListener {
   fun onDetailsConsumed()
 }
+
+/** Every message the component posts, raw, like the React Native library's `onMessage`. */
+fun interface OnPinataMessageListener {
+  fun onMessage(data: String)
+}

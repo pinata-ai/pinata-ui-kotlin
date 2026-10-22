@@ -41,6 +41,8 @@ abstract class PinataComponentView @JvmOverloads constructor(
   var onMarketplaceOpenListener: OnMarketplaceOpenListener? = null
   var onErrorListener: OnPinataErrorListener? = null
   var onDetailsConsumedListener: OnDetailsConsumedListener? = null
+  /** Raw passthrough of every message, for events the SDK does not type (RN parity). */
+  var onMessageListener: OnPinataMessageListener? = null
 
   protected val webView = WebView(context)
   private var bridgeSupported = true
@@ -81,6 +83,7 @@ abstract class PinataComponentView @JvmOverloads constructor(
   }
 
   private fun onBridgeMessage(data: String) {
+    onMessageListener?.onMessage(data)
     if (!data.startsWith("{")) return
     val event = try { JSONObject(data) } catch (_: Exception) { return }
     when (event.optString("type")) {
