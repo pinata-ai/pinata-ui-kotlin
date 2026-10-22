@@ -25,4 +25,7 @@ kotlin.compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
 dependencies {
   implementation("androidx.browser:browser:1.8.0")
   implementation("androidx.webkit:webkit:1.8.0")
+  testImplementation("junit:junit:4.13.2")
+  // Real org.json for JVM tests; the android.jar stubs throw.
+  testImplementation("org.json:json:20240303")
 }
