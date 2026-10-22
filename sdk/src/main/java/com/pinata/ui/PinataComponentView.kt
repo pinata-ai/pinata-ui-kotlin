@@ -120,47 +120,65 @@ abstract class PinataComponentView @JvmOverloads constructor(
   }
 
   /** The view's typed `customization`, serialized; null when nothing was set. */
-  protected abstract fun componentCustomization(): JSONObject?
+  internal abstract fun componentCustomization(): JSONObject?
 
-  protected open fun buildCustomization(): JSONObject {
-    val json = JSONObject(extraCustomization.toString())
-    json.mergeFlat(componentCustomization())
-    if (usesEventMode) json.put("navigationMode", "events")
-    companyName?.let { if (!json.has("companyName")) json.put("companyName", it) }
-    return json
-  }
+  internal open fun buildCustomization(): JSONObject =
+    buildCustomizationJson(extraCustomization, componentCustomization(), usesEventMode, companyName)
 
-  protected open fun elementAttributes(): String {
-    val attributes = StringBuilder()
-    environment.elementEnvironment?.let { attributes.append(" environment=\"$it\"") }
-    userToken?.let { attributes.append(" usertoken=\"${escapeAttribute(it)}\"") }
-    attributes.append(" customization='${escapeAttribute(buildCustomization().toString())}'")
-    return attributes.toString()
-  }
+  internal open fun elementAttributes(): String =
+    buildElementAttributes(environment, userToken, buildCustomization())
 
-  private fun buildHostPage(): String = """
-    <!doctype html>
-    <html>
-    <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>html, body { margin: 0; height: 100%; }</style>
-    <script type="module" src="${environment.scriptUrl}"></script>
-    <script>
-      addEventListener("message", e => PinataBridge.postMessage(JSON.stringify(e.data)));
-      addEventListener("DOMContentLoaded", () =>
-        document.body.firstElementChild.addEventListener("pinata-error", e =>
-          PinataBridge.postMessage(JSON.stringify({type: "pinata-error", detail: e.detail == null ? "" : e.detail}))));
-    </script>
-    </head>
-    <body>
-    <$componentTag style="display:block;height:100vh"${elementAttributes()}></$componentTag>
-    </body>
-    </html>
-  """.trimIndent()
-
-  private fun escapeAttribute(value: String) =
-    value.replace("&", "&amp;").replace("'", "&#39;").replace("\"", "&quot;")
+  private fun buildHostPage(): String =
+    buildHostPage(environment.scriptUrl, componentTag, elementAttributes())
 }
+
+internal fun buildCustomizationJson(
+  extra: JSONObject,
+  component: JSONObject?,
+  eventMode: Boolean,
+  companyName: String?,
+): JSONObject {
+  val json = JSONObject(extra.toString())
+  json.mergeFlat(component)
+  if (eventMode) json.put("navigationMode", "events")
+  companyName?.let { if (!json.has("companyName")) json.put("companyName", it) }
+  return json
+}
+
+internal fun buildElementAttributes(
+  environment: PinataEnvironment,
+  userToken: String?,
+  customization: JSONObject,
+): String {
+  val attributes = StringBuilder()
+  environment.elementEnvironment?.let { attributes.append(" environment=\"$it\"") }
+  userToken?.let { attributes.append(" usertoken=\"${escapeAttribute(it)}\"") }
+  attributes.append(" customization='${escapeAttribute(customization.toString())}'")
+  return attributes.toString()
+}
+
+internal fun buildHostPage(scriptUrl: String, componentTag: String, elementAttributes: String): String = """
+  <!doctype html>
+  <html>
+  <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>html, body { margin: 0; height: 100%; }</style>
+  <script type="module" src="$scriptUrl"></script>
+  <script>
+    addEventListener("message", e => PinataBridge.postMessage(JSON.stringify(e.data)));
+    addEventListener("DOMContentLoaded", () =>
+      document.body.firstElementChild.addEventListener("pinata-error", e =>
+        PinataBridge.postMessage(JSON.stringify({type: "pinata-error", detail: e.detail == null ? "" : e.detail}))));
+  </script>
+  </head>
+  <body>
+  <$componentTag style="display:block;height:100vh"$elementAttributes></$componentTag>
+  </body>
+  </html>
+""".trimIndent()
+
+internal fun escapeAttribute(value: String) =
+  value.replace("&", "&amp;").replace("'", "&#39;").replace("\"", "&quot;")
 
 /** Opens every window.open() target in Chrome Custom Tabs instead of a second WebView. */
 private class PopupsToCustomTabs : WebChromeClient() {
