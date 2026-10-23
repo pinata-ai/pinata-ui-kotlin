@@ -1,0 +1,77 @@
+name: Publish
+run-name: "Publish ${{ github.ref_name }} to static.pinata.ai"
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    env:
+      S3_BUCKET_NAME: "prod-pinata-ai-public-media"
+      REPO_PREFIX: "static/android/maven"
+      PUBLIC_URL: "https://static.pinata.ai/static/android/maven"
+      ARTIFACT_PATH: "ai/pinata/pinata-ui"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches sdkVersion
+        run: |
+          VERSION=$(grep '^sdkVersion=' gradle.properties | cut -d= -f2)
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match sdkVersion=$VERSION in gradle.properties"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      # Read through the public URL, so the AWS key only needs upload and invalidation (as in pinata-ui).
+      - name: Refuse to overwrite a published version
+        run: |
+          if curl -sfI "$PUBLIC_URL/$ARTIFACT_PATH/$VERSION/pinata-ui-$VERSION.pom" > /dev/null; then
+            echo "::error::$VERSION is already published"
+            exit 1
+          fi
+
+      # Gradle adds the new version to this file, so the older versions stay listed.
+      - name: Download the current maven-metadata.xml
+        run: |
+          mkdir -p "build/maven-repo/$ARTIFACT_PATH"
+          curl -sf "$PUBLIC_URL/$ARTIFACT_PATH/maven-metadata.xml" -o "build/maven-repo/$ARTIFACT_PATH/maven-metadata.xml" \
+            || echo "No maven-metadata.xml yet: first release"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Test and build the release
+        run: ./gradlew test :sdk:publishReleasePublicationToLocalRepository
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Upload to S3
+        run: aws s3 cp build/maven-repo/ "s3://$S3_BUCKET_NAME/$REPO_PREFIX/" --recursive
+
+      - name: Invalidate CloudFront cache for maven-metadata.xml
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.DISTRIBUTION_ID }} \
+            --paths "/$REPO_PREFIX/$ARTIFACT_PATH/maven-metadata.xml*"
+
+      - name: Write job summary
+        run: |
+          {
+            echo "## ai.pinata:pinata-ui:$VERSION"
+            echo ""
+            echo "Published to $PUBLIC_URL"
+          } >> $GITHUB_STEP_SUMMARY
