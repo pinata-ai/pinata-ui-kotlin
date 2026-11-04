@@ -168,7 +168,7 @@ internal fun buildHostPage(scriptUrl: String, componentTag: String, elementAttri
     addEventListener("message", e => PinataBridge.postMessage(JSON.stringify(e.data)));
     addEventListener("DOMContentLoaded", () =>
       document.body.firstElementChild.addEventListener("pinata-error", e =>
-        PinataBridge.postMessage(JSON.stringify({type: "pinata-error", detail: e.detail == null ? "" : e.detail}))));
+        PinataBridge.postMessage(JSON.stringify({type: "pinata-error", detail: e.detail instanceof Error ? e.detail.message : e.detail == null ? "" : e.detail}))));
   </script>
   </head>
   <body>
