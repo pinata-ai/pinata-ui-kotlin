@@ -30,7 +30,7 @@ Then add the dependency to your app module:
 
 ```kotlin
 dependencies {
-  implementation("ai.pinata:pinata-ui:0.1.0")
+  implementation("ai.pinata:pinata-ui:0.1.1")
 }
 ```
 
