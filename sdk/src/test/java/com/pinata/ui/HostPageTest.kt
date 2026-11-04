@@ -72,4 +72,10 @@ class HostPageTest {
     assertTrue(page.contains("addEventListener(\"message\", e => PinataBridge.postMessage(JSON.stringify(e.data)))"))
     assertTrue(page.contains("pinata-error"))
   }
+
+  @Test
+  fun `host page sends the message of error objects instead of an empty json`() {
+    val page = buildHostPage("https://static.pinata.ai/x.js", "pinata-marketplace-wallet", "")
+    assertTrue(page.contains("detail: e.detail instanceof Error ? e.detail.message : e.detail == null ? \"\" : e.detail"))
+  }
 }
