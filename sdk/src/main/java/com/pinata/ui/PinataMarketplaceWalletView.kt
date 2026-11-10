@@ -2,6 +2,7 @@ package com.pinata.ui
 
 import android.content.Context
 import android.util.AttributeSet
+import org.json.JSONObject
 
 /**
  * Marketplace Wallet in event mode: points balance, offers and a CTA. Every CTA click
@@ -17,5 +18,6 @@ class PinataMarketplaceWalletView @JvmOverloads constructor(
 
   var customization: WalletCustomization = WalletCustomization()
 
-  override fun componentCustomization() = customization.toJson()
+  override fun componentCustomization(): JSONObject =
+    (customization.toJson() ?: JSONObject()).put("observeWidth", true)
 }
