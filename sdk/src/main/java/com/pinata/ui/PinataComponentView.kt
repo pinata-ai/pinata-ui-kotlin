@@ -150,7 +150,7 @@ internal fun buildElementAttributes(
   userToken: String?,
   customization: JSONObject,
 ): String {
-  val attributes = StringBuilder()
+  val attributes = StringBuilder(" useFixedHeight=\"false\"")
   environment.elementEnvironment?.let { attributes.append(" environment=\"$it\"") }
   userToken?.let { attributes.append(" usertoken=\"${escapeAttribute(it)}\"") }
   attributes.append(" customization='${escapeAttribute(customization.toString())}'")

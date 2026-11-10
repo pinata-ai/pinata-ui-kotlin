@@ -45,6 +45,13 @@ class HostPageTest {
   }
 
   @Test
+  fun `every component fills its view instead of the fixed 70dvh box`() {
+    assertTrue(
+      buildElementAttributes(PinataEnvironment.PRODUCTION, null, JSONObject()).startsWith(" useFixedHeight=\"false\""),
+    )
+  }
+
+  @Test
   fun `user token is escaped for the attribute`() {
     val attributes = buildElementAttributes(PinataEnvironment.PRODUCTION, "a\"b'c&d", JSONObject())
     assertTrue(attributes.contains("usertoken=\"a&quot;b&#39;c&amp;d\""))
