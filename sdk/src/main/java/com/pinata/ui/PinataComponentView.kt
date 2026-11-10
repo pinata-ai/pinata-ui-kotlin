@@ -42,6 +42,7 @@ abstract class PinataComponentView @JvmOverloads constructor(
   var onMarketplaceOpenListener: OnMarketplaceOpenListener? = null
   var onErrorListener: OnPinataErrorListener? = null
   var onDetailsConsumedListener: OnDetailsConsumedListener? = null
+  var onContentHeightListener: OnContentHeightListener? = null
   /** Raw passthrough of every message, for events the SDK does not type (RN parity). */
   var onMessageListener: OnPinataMessageListener? = null
 
@@ -83,7 +84,7 @@ abstract class PinataComponentView @JvmOverloads constructor(
     }
   }
 
-  private fun onBridgeMessage(data: String) {
+  internal fun onBridgeMessage(data: String) {
     onMessageListener?.onMessage(data)
     if (!data.startsWith("{")) return
     val event = try { JSONObject(data) } catch (_: Exception) { return }
@@ -91,6 +92,8 @@ abstract class PinataComponentView @JvmOverloads constructor(
       "pinata-marketplace-open" ->
         onMarketplaceOpenListener?.onMarketplaceOpen(MarketplaceOpenEvent.fromJson(event))
       "pinata-embed-details-consumed" -> onDetailsConsumedListener?.onDetailsConsumed()
+      "pinata-content-height" ->
+        event.optInt("height").takeIf { it > 0 }?.let { onContentHeightListener?.onContentHeight(it) }
       // `detail` is whatever pinata-ui put in the CustomEvent: a string or an object (kept as JSON).
       "pinata-error" ->
         onErrorListener?.onError(

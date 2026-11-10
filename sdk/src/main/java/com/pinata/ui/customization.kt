@@ -71,6 +71,9 @@ class WalletCustomization {
   var disabledCta: Boolean? = null
   var helperText: String? = null
 
+  /** `false` keeps the title and the points in one row on narrow widths instead of stacking them. */
+  var stackHeaderOnNarrow: Boolean? = null
+
   /** Text link under the header; both are needed for it to show. */
   var descriptionCopy: String? = null
   var descriptionUrl: String? = null
@@ -84,6 +87,7 @@ class WalletCustomization {
     "ctaText" to ctaText,
     "disabledCta" to disabledCta,
     "helperText" to helperText,
+    "stackHeaderOnNarrow" to stackHeaderOnNarrow,
     "description" to json("copy" to descriptionCopy, "url" to descriptionUrl),
     "companyName" to companyName,
     "currentPageUrl" to currentPageUrl,
