@@ -34,6 +34,4 @@ class PinataFullShoppingView @JvmOverloads constructor(
     detailsId?.let { put("detailsId", it) }
     detailsType?.let { put("detailsType", it) }
   }
-
-  override fun elementAttributes() = " useFixedHeight=\"false\"" + super.elementAttributes()
 }
