@@ -99,7 +99,7 @@ Pass `detailsId` and `detailsType` to `PinataFullShoppingView` as they are. Othe
 | Listener | Called when |
 | --- | --- |
 | `onDetailsConsumedListener` (Full Shopping) | The item passed in `detailsId` was opened, or the renter declined the consent screen that comes before it |
-| `onErrorListener` | The component reports an error while loading (for example an invalid or expired `userToken`), the device's WebView cannot deliver events to the app, or `load()` is called on a destroyed view |
+| `onErrorListener` | The component reports an error while loading (for example an invalid or expired `userToken`), the device's WebView cannot deliver events to the app, or `load()` is called after `destroy()` |
 | `onMessageListener` | Every message the component posts, as a raw JSON string, also the ones that have a typed listener |
 
 All listeners run on the main thread.
@@ -124,12 +124,16 @@ Keys the SDK does not type yet go in `extraCustomization` (a `JSONObject`). Type
 - **Size:** the component fills the view. Give the view a height, or let it fill its parent
   (`MATCH_PARENT` or a layout weight).
 - **Properties are read by `load()`.** To change them later, set them and call `load()` again.
-- **Single use:** when the view is detached from the window it destroys its `WebView`. To show the
-  component again (for example after a Fragment recreates its views), create a new instance.
+- **Release it with `destroy()`.** Call `destroy()` when the screen is finished with the component
+  (for example in `onDestroy` or `onDestroyView`); it releases the `WebView`. A destroyed view
+  cannot be loaded again: create a new instance.
+- **Scrolling lists:** detaching the view from the window keeps it as it was, so it can be an item
+  of a `RecyclerView` or a `LazyColumn` and come back without reloading.
 - **Links:** pages that leave the marketplace, such as a deal on the merchant's site, open in
   Chrome Custom Tabs.
 - **Java:** the API is Java-friendly (setters such as `setUserToken(...)`, lambdas for listeners).
-- **Jetpack Compose:** the views are plain Android `View`s; use them through `AndroidView`.
+- **Jetpack Compose:** the views are plain Android `View`s; use them through `AndroidView`, and
+  call `destroy()` in its `onRelease`.
 
 ## Development
 

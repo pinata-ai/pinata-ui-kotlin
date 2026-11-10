@@ -13,11 +13,13 @@ import com.pinata.ui.PinataMarketplaceWalletView;
  */
 public class MainActivity extends Activity {
 
+  private PinataMarketplaceWalletView wallet;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    PinataMarketplaceWalletView wallet = new PinataMarketplaceWalletView(this);
+    wallet = new PinataMarketplaceWalletView(this);
     wallet.setEnvironment(PinataEnvironment.valueOf(BuildConfig.DEMO_ENV));
     wallet.setUserToken(BuildConfig.DEMO_TOKEN.isEmpty() ? null : BuildConfig.DEMO_TOKEN);
     wallet.setCompanyName("your-company");
@@ -28,5 +30,11 @@ public class MainActivity extends Activity {
         Toast.makeText(this, "pinata-error: " + message, Toast.LENGTH_LONG).show());
     wallet.load();
     setContentView(wallet);
+  }
+
+  @Override
+  protected void onDestroy() {
+    wallet.destroy();
+    super.onDestroy();
   }
 }

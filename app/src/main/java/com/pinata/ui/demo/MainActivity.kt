@@ -78,9 +78,17 @@ class MainActivity : ComponentActivity() {
 
   private fun show(view: PinataComponentView) {
     onFullShopping = view is PinataFullShoppingView
+    destroyShown()
     container.removeAllViews()
     container.addView(view)
     view.load()
+  }
+
+  private fun destroyShown() = (container.getChildAt(0) as? PinataComponentView)?.destroy()
+
+  override fun onDestroy() {
+    destroyShown()
+    super.onDestroy()
   }
 
   private fun PinataComponentView.configured(userToken: String?) = apply {
