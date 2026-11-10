@@ -21,8 +21,9 @@ import org.json.JSONObject
  * (deals, full Pinata account) open in Chrome Custom Tabs.
  *
  * Configure the properties, then call [load]. The component reads them on load only;
- * to change them afterwards, set and call [load] again. The view is single-use: once
- * detached from the window it destroys its WebView, so create a new instance to show it again.
+ * to change them afterwards, set and call [load] again. Detaching the view from the window
+ * keeps it alive, so it can live in a scrolling list. Call [destroy] when the screen is done
+ * with it; a destroyed view cannot be loaded again, so create a new instance.
  */
 abstract class PinataComponentView @JvmOverloads constructor(
   context: Context,
@@ -100,7 +101,7 @@ abstract class PinataComponentView @JvmOverloads constructor(
 
   fun load() {
     if (destroyed) {
-      onErrorListener?.onError("This view was detached and destroyed; create a new instance.")
+      onErrorListener?.onError("This view was destroyed; create a new instance.")
       return
     }
     if (!bridgeSupported) {
@@ -111,9 +112,8 @@ abstract class PinataComponentView @JvmOverloads constructor(
     webView.loadDataWithBaseURL(environment.baseUrl, buildHostPage(), "text/html", "utf-8", null)
   }
 
-  // The view is single-use, like the web component: once detached, create a new instance.
-  override fun onDetachedFromWindow() {
-    super.onDetachedFromWindow()
+  fun destroy() {
+    if (destroyed) return
     destroyed = true
     removeView(webView)
     webView.destroy()
