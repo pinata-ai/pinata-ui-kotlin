@@ -39,6 +39,11 @@ fun interface OnDetailsConsumedListener {
   fun onDetailsConsumed()
 }
 
+/** The Wallet's content height in dp, on render and every time it changes. */
+fun interface OnContentHeightListener {
+  fun onContentHeight(heightDp: Int)
+}
+
 /** Every message the component posts, raw, like the React Native library's `onMessage`. */
 fun interface OnPinataMessageListener {
   fun onMessage(data: String)

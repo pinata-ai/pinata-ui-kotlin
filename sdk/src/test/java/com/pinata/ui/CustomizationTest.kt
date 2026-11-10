@@ -76,4 +76,10 @@ class CustomizationTest {
     assertEquals("33130", json.getJSONObject("attributes").getString("zipCode"))
     assertTrue(json.length() == 1)
   }
+
+  @Test
+  fun `wallet sends stackHeaderOnNarrow only when set`() {
+    val json = WalletCustomization().apply { stackHeaderOnNarrow = false }.toJson()!!
+    assertEquals(false, json.getBoolean("stackHeaderOnNarrow"))
+  }
 }

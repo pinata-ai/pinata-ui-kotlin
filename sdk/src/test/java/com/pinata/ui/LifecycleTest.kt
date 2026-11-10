@@ -34,6 +34,17 @@ class LifecycleTest {
   }
 
   @Test
+  fun `content height message reaches the listener`() {
+    val heights = mutableListOf<Int>()
+    wallet.onContentHeightListener = OnContentHeightListener { heights += it }
+
+    wallet.onBridgeMessage("""{"type":"pinata-content-height","height":323}""")
+    wallet.onBridgeMessage("""{"type":"pinata-content-height"}""")
+
+    assertEquals(listOf(323), heights)
+  }
+
+  @Test
   fun `destroy releases the web view and load reports it`() {
     parent.addView(wallet)
     wallet.destroy()

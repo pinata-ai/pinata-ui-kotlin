@@ -80,6 +80,25 @@ fun openFullShopping(event: MarketplaceOpenEvent) {
 }
 ```
 
+To show the Wallet as a card that is as tall as its content (for example as an item of a
+scrolling list), start with an estimated height and set the real one from
+`onContentHeightListener`:
+
+```kotlin
+val density = context.resources.displayMetrics.density
+val wallet = PinataMarketplaceWalletView(context).apply {
+  environment = PinataEnvironment.SANDBOX
+  userToken = token
+  onContentHeightListener = OnContentHeightListener { heightDp ->
+    layoutParams = layoutParams.apply { height = (heightDp * density).roundToInt() }
+  }
+}
+list.addView(wallet, ViewGroup.LayoutParams(MATCH_PARENT, (350 * density).roundToInt()))
+wallet.load()
+```
+
+In Jetpack Compose, keep the height in a state and use it in `Modifier.height(heightDp.dp)`.
+
 When `authenticated` is `false`, the renter has no Piñata account yet: create it through your
 backend integration (see the Partner API reference) and onboard them, then pass their `userToken`.
 
@@ -99,6 +118,7 @@ Pass `detailsId` and `detailsType` to `PinataFullShoppingView` as they are. Othe
 | Listener | Called when |
 | --- | --- |
 | `onDetailsConsumedListener` (Full Shopping) | The item passed in `detailsId` was opened, or the renter declined the consent screen that comes before it |
+| `onContentHeightListener` (Wallet) | The Wallet rendered or its height changed. Receives the height of its content in dp |
 | `onErrorListener` | The component reports an error while loading (for example an invalid or expired `userToken`), the device's WebView cannot deliver events to the app, or `load()` is called after `destroy()` |
 | `onMessageListener` | Every message the component posts, as a raw JSON string, also the ones that have a typed listener |
 
@@ -122,7 +142,8 @@ Keys the SDK does not type yet go in `extraCustomization` (a `JSONObject`). Type
 - **Environments:** `PRODUCTION` (default) and `SANDBOX` for testing. Use tokens from the same
   environment.
 - **Size:** the component fills the view. Give the view a height, or let it fill its parent
-  (`MATCH_PARENT` or a layout weight).
+  (`MATCH_PARENT` or a layout weight). The Wallet reports the height of its content through
+  `onContentHeightListener`, so you can size it to fit; the Preview and Full Shopping do not.
 - **Properties are read by `load()`.** To change them later, set them and call `load()` again.
 - **Release it with `destroy()`.** Call `destroy()` when the screen is finished with the component
   (for example in `onDestroy` or `onDestroyView`); it releases the `WebView`. A destroyed view
