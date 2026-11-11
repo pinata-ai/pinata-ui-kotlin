@@ -34,6 +34,11 @@ class LifecycleTest {
   }
 
   @Test
+  fun `wallet asks the component to follow its width`() {
+    assertTrue(wallet.componentCustomization().getBoolean("observeWidth"))
+  }
+
+  @Test
   fun `content height message reaches the listener`() {
     val heights = mutableListOf<Int>()
     wallet.onContentHeightListener = OnContentHeightListener { heights += it }
