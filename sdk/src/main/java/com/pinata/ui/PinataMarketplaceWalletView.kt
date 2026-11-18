@@ -18,6 +18,7 @@ class PinataMarketplaceWalletView @JvmOverloads constructor(
 
   var customization: WalletCustomization = WalletCustomization()
 
-  override fun componentCustomization(): JSONObject =
-    (customization.toJson() ?: JSONObject()).put("observeWidth", true)
+  override fun componentCustomization(): JSONObject? =
+    if (onContentHeightListener == null) customization.toJson()
+    else (customization.toJson() ?: JSONObject()).put("observeWidth", true)
 }

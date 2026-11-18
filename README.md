@@ -144,6 +144,8 @@ Keys the SDK does not type yet go in `extraCustomization` (a `JSONObject`). Type
 - **Size:** the component fills the view. Give the view a height, or let it fill its parent
   (`MATCH_PARENT` or a layout weight). The Wallet reports the height of its content through
   `onContentHeightListener`, so you can size it to fit; the Preview and Full Shopping do not.
+  With the listener set, a Wallet narrower than about 384dp shows its offer in the narrow layout
+  (image on top), which is taller.
 - **Properties are read by `load()`.** To change them later, set them and call `load()` again.
 - **Release it with `destroy()`.** Call `destroy()` when the screen is finished with the component
   (for example in `onDestroy` or `onDestroyView`); it releases the `WebView`. A destroyed view

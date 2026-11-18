@@ -4,6 +4,7 @@ import android.app.Activity
 import android.widget.FrameLayout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,8 +35,12 @@ class LifecycleTest {
   }
 
   @Test
-  fun `wallet asks the component to follow its width`() {
-    assertTrue(wallet.componentCustomization().getBoolean("observeWidth"))
+  fun `wallet follows its width only when the app sizes it from the content height`() {
+    assertNull(wallet.componentCustomization())
+
+    wallet.onContentHeightListener = OnContentHeightListener {}
+
+    assertTrue(wallet.componentCustomization()!!.getBoolean("observeWidth"))
   }
 
   @Test
