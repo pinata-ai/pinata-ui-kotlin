@@ -142,7 +142,7 @@ internal fun buildCustomizationJson(
   companyName: String?,
 ): JSONObject {
   val json = JSONObject(extra.toString())
-  json.mergeFlat(component)
+  json.mergeDeep(component)
   if (eventMode) json.put("navigationMode", "events")
   companyName?.let { if (!json.has("companyName")) json.put("companyName", it) }
   return json

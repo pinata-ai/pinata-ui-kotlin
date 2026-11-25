@@ -71,6 +71,26 @@ class CustomizationTest {
   }
 
   @Test
+  fun `full shopping wallet card texts and colors use the web keys`() {
+    val json = FullShoppingCustomization().apply {
+      labels.walletCard.description = "Your points"
+      labels.walletCard.accountModalTitle = "Leave Resident Rewards?"
+      labels.walletCard.accountModalSecondaryCta = "Cancel"
+      walletCtaColor = "#2E7D32"
+      walletCtaFontColor = "#FFFFFF"
+      usePinataColors = false
+    }.toJson()
+
+    val walletCard = json.getJSONObject("labels").getJSONObject("walletCard")
+    assertEquals("Your points", walletCard.getString("description"))
+    assertEquals("Leave Resident Rewards?", walletCard.getString("accountModalTitle"))
+    assertEquals("Cancel", walletCard.getString("accountModalSecondaryCta"))
+    assertEquals("#2E7D32", json.getString("walletCtaColor"))
+    assertEquals("#FFFFFF", json.getString("walletCtaFontColor"))
+    assertEquals(false, json.getBoolean("usePinataColors"))
+  }
+
+  @Test
   fun `renter attributes serialize under attributes`() {
     val json = PreviewCustomization().apply { attributes.zipCode = "33130" }.toJson()!!
     assertEquals("33130", json.getJSONObject("attributes").getString("zipCode"))
