@@ -30,6 +30,32 @@ class HostPageTest {
   }
 
   @Test
+  fun `extra keys inside a typed object survive, so new keys need no sdk update`() {
+    val extra = JSONObject().put(
+      "labels",
+      JSONObject().put("walletCard", JSONObject().put("newText", "from extra").put("accessAccountCta", "from extra")),
+    )
+    val typed = JSONObject().put(
+      "labels",
+      JSONObject()
+        .put("featured", JSONObject().put("title", "Featured"))
+        .put("walletCard", JSONObject().put("accessAccountCta", "from typed")),
+    )
+    val walletCard = buildCustomizationJson(extra, typed, false, null).getJSONObject("labels").getJSONObject("walletCard")
+
+    assertEquals("from extra", walletCard.getString("newText"))
+    assertEquals("from typed", walletCard.getString("accessAccountCta"))
+  }
+
+  @Test
+  fun `a typed value replaces an extra object of the same key`() {
+    val extra = JSONObject().put("currency", JSONObject().put("a", 1))
+    val typed = JSONObject().put("currency", "pinata")
+
+    assertEquals("pinata", buildCustomizationJson(extra, typed, false, null).getString("currency"))
+  }
+
+  @Test
   fun `companyName property fills only when customization misses it`() {
     val fromTyped = buildCustomizationJson(JSONObject(), JSONObject().put("companyName", "typed"), true, "prop")
     assertEquals("typed", fromTyped.getString("companyName"))

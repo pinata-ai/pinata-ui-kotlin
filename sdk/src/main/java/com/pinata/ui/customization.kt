@@ -135,9 +135,17 @@ class BrowseMarketplaceLabels {
 }
 
 class WalletCardLabels {
+  var description: String? = null
   var accessAccountCta: String? = null
+  var accountModalTitle: String? = null
+  var accountModalSecondaryCta: String? = null
 
-  internal fun toJson() = json("accessAccountCta" to accessAccountCta)
+  internal fun toJson() = json(
+    "description" to description,
+    "accessAccountCta" to accessAccountCta,
+    "accountModalTitle" to accountModalTitle,
+    "accountModalSecondaryCta" to accountModalSecondaryCta,
+  )
 }
 
 class FullShoppingLabels {
@@ -189,6 +197,9 @@ class FullShoppingCustomization {
   var useCustomFont: Boolean? = null
   var walletSectionEnabled: Boolean? = null
   var transactionHistoryEnabled: Boolean? = null
+  var walletCtaColor: String? = null
+  var walletCtaFontColor: String? = null
+  var usePinataColors: Boolean? = null
   var attributes: RenterAttributes = RenterAttributes()
   var labels: FullShoppingLabels = FullShoppingLabels()
   var colorScheme: ColorScheme = ColorScheme()
@@ -205,6 +216,9 @@ class FullShoppingCustomization {
       "useCustomFont" to useCustomFont,
       "walletSectionEnabled" to walletSectionEnabled,
       "transactionHistoryEnabled" to transactionHistoryEnabled,
+      "walletCtaColor" to walletCtaColor,
+      "walletCtaFontColor" to walletCtaFontColor,
+      "usePinataColors" to usePinataColors,
       "attributes" to attributes.toJson(),
       "labels" to labels.toJson(),
       "colorScheme" to colorScheme.toJson(),
@@ -230,4 +244,12 @@ internal fun json(vararg pairs: Pair<String, Any?>): JSONObject? {
 
 internal fun JSONObject.mergeFlat(other: JSONObject?) {
   other?.keys()?.forEach { put(it, other.get(it)) }
+}
+
+internal fun JSONObject.mergeDeep(other: JSONObject?) {
+  other?.keys()?.forEach { key ->
+    val mine = optJSONObject(key)
+    val theirs = other.get(key)
+    if (mine != null && theirs is JSONObject) mine.mergeDeep(theirs) else put(key, theirs)
+  }
 }
